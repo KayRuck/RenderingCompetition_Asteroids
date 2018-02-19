@@ -2,8 +2,7 @@ package CGA.User.DataStructures.Camera;
 
 
 import org.joml.*;
-
-import java.lang.Math;
+import org.joml.Math;
 
 /**
  * Created by Fabian on 16.09.2017.
@@ -18,7 +17,7 @@ public class FlyCamera extends Camera {
     public FlyCamera() {
         super();
         aspectratio = 16.0f / 9.0f;
-        fov = (float)Math.toRadians(90.0f);
+        fov = (float)org.joml.Math.toRadians(90.0f);
         near = 0.1f;
         far = 100.0f;
     }
@@ -98,11 +97,26 @@ public class FlyCamera extends Camera {
     }
 
     public void up(float amount) {
-        translateGlobal(new Vector3f(0.0f, 1.0f, 0.0f).mul(amount));
+//        float r    = 1.0f;
+//        float phi  = (float)Math.PI /  2.0f;
+//        float teta = amount; //(float)Math.PI / 10.0f;
+//        float x, y, z;
+//
+//        x = r * (float)Math.sin(teta) * (float)Math.cos(phi);
+//        y = r * (float)Math.cos(teta);
+//        z = r * (float)Math.sin(teta) * (float)Math.sin(phi);
+
+        if(getPosition().y < 2.0f) {
+            translateGlobal(new Vector3f(0.0f, 1.0f, 0.1f).mul(amount)); // TODO mit Orbit Kamera richtig machen!
+        }
+//        translateGlobal(new Vector3f(x, y, z));
     }
 
     public void down(float amount) {
-        translateGlobal(new Vector3f(0.0f, -1.0f, 0.0f).mul(amount));
+        if(getPosition().y > -0.75f) {
+            translateGlobal(new Vector3f(0.0f, -1.0f, -0.1f).mul(amount)); // TODO mit Orbit Kamera richtig machen!
+        }
+//        translateGlobal(new Vector3f(0.0f, -1.0f, -0.1f).mul(amount));
     }
 
     public void forward(float amount) {
@@ -112,4 +126,5 @@ public class FlyCamera extends Camera {
     public void backward(float amount) {
         translateLocal(new Vector3f(0.0f, 0.0f, 1.0f).mul(amount));
     }
+
 }
