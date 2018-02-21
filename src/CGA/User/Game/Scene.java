@@ -26,8 +26,6 @@ public class Scene {
 
     private Renderable orbRend, ringRend;
 
-    private Mesh orbMesh, ringMesh;
-
     //Lights
     private PointLight orb_light;
     private PointLight ring_light;
@@ -35,7 +33,6 @@ public class Scene {
     private Texture2D orb_diff, orb_spec, orb_emit;
     private Texture2D ring_diff, ring_spec, ring_emit;
     private Texture2D flashlighttex;
-    private MatrixStackf m_orb;
 
     //camera
 
@@ -75,8 +72,8 @@ public class Scene {
             flashlight = 0.0f;
 
             //load an object and create a mesh
-            OBJLoader.OBJResult resOrb  = OBJLoader.loadOBJ("assets/models/sphere.obj", true, true);
-            OBJLoader.OBJResult resRing = OBJLoader.loadOBJ("assets/models/ring.obj", true, true);
+            OBJLoader.OBJResult resOrb    = OBJLoader.loadOBJ("assets/models/sphere.obj", true, true);
+            OBJLoader.OBJResult resRing   = OBJLoader.loadOBJ("assets/models/ringCC.obj", true, true);
 
             //Create the mesh
             VertexAttribute[] vertexAttributes = new VertexAttribute[3];
@@ -93,7 +90,7 @@ public class Scene {
                 orbRend.meshes.add(mesh);
             }
 
-            orbRend.scaleLocal(new Vector3f(0.3f));
+            orbRend.scaleLocal(new Vector3f(0.2f));
 
             ringRend = new Renderable();
 
@@ -101,6 +98,7 @@ public class Scene {
                 Mesh mesh = new Mesh(m.getVertexData(), m.getIndexData(), vertexAttributes, ring_diff, ring_spec, ring_emit, 5.0f);
                 ringRend.meshes.add(mesh);
             }
+
 
             //light setup
 
@@ -148,8 +146,9 @@ public void render(float dt) {
     shader.setUniform("view_matrix", camera.getViewMatrix(), false);
     shader.setUniform("proj_matrix", camera.getProjectionMatrix(), false);
 
-    orbRend.render(shader);  // zweites Objekt (ring) wird nihct angezeigt
+    orbRend.render(shader);  // zweites Objekt (ring) wird nicht angezeigt
 
+    ringRend.render(shader);
     orb_light.bind(shader, "light");
     shader.setUniform("uvMultiplier", 1.0f);
 
@@ -180,10 +179,10 @@ public void render(float dt) {
             camera.up(movemul * dt);
         }
 
-        //TODO Ist das mit Orb light richtig?
+        //TODO Ist das mit orbREnd (vorher Orb light richtig?
 
         if (window.getKeyState(GLFW_KEY_UP)) {
-            orb_light.translateGlobal(new Vector3f(0.0f, 0.0f, -1.0f * dt));
+            orbRend.translateGlobal(new Vector3f(0.0f, 0.0f, -1.0f * dt));
         }
         if (window.getKeyState(GLFW_KEY_DOWN)) {
             orb_light.translateGlobal(new Vector3f(0.0f, 0.0f, 1.0f * dt));
