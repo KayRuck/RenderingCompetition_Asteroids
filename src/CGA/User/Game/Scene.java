@@ -107,10 +107,18 @@ public class Scene {
 
 
             //setup camera
-            camera = new FlyCamera( window.getFramebufferWidth(), window.getFramebufferHeight(), (float) Math.toRadians(90.0), 0.1f, 100.0f);
+            camera = new FlyCamera(
+                    window.getFramebufferWidth(),
+                    window.getFramebufferHeight(),
+                    (float) Math.toRadians(90.0),
+                    0.1f,
+                    100.0f
+            );
 
             //move camera a little bit in z direction
             camera.translateGlobal(new Vector3f(0.0f, 2.0f, 6.0f));
+            camera.forward(3.0f);
+            camera.down(0.5f);
 
 
             //initial opengl state
@@ -133,60 +141,87 @@ public class Scene {
 
     }
 
-public void render(float dt) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    public void render(float dt) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shader.use();
-    flashlighttex.bind(3);
-    shader.setUniform("flashlightTex", 3);
-    shader.setUniform("flashlightFactor", flashlight);
-    shader.setUniform("screensize", new Vector2f((float) window.getFramebufferWidth(), (float) window.getFramebufferHeight()));
+        shader.use();
+        flashlighttex.bind(3);
+        shader.setUniform("flashlightTex", 3);
+        shader.setUniform("flashlightFactor", flashlight);
+        shader.setUniform("screensize", new Vector2f((float) window.getFramebufferWidth(), (float) window.getFramebufferHeight()));
 
-    // render Camera
-    shader.setUniform("view_matrix", camera.getViewMatrix(), false);
-    shader.setUniform("proj_matrix", camera.getProjectionMatrix(), false);
+        // render Camera
+        shader.setUniform("view_matrix", camera.getViewMatrix(), false);
+        shader.setUniform("proj_matrix", camera.getProjectionMatrix(), false);
 
+<<<<<<< HEAD
     orbRend.render(shader);  // zweites Objekt (ring) wird nicht angezeigt
 
     ringRend.render(shader);
     orb_light.bind(shader, "light");
     shader.setUniform("uvMultiplier", 1.0f);
+=======
+        orbRend.render(shader);  // zweites Objekt (ring) wird nihct angezeigt
 
-    Transformable[] t = {orbRend}; // TODO Orb oder Orb_light? Muss ein Rendable sein
-    ringRend.render(shader, t);
+        orb_light.bind(shader, "light");
+        shader.setUniform("uvMultiplier", 1.0f);
+>>>>>>> 618c7afcc93826061ff1a279d57428cabe165aa0
 
-}
+        // TODO richtig machen
+//        ringRend.render(shader);
+
+        Transformable[] t = {orbRend}; // TODO Orb oder Orb_light? Muss ein Rendable sein
+        ringRend.render(shader, t);
+//        ringRend.translateGlobal( new Vector3f(-ringRend.getPosition().x, -ringRend.getPosition().y, -ringRend.getPosition().z ));
+
+    }
 
     public void update(float dt) {
         //camera update
         float movemul = 0.75f;
-        if (window.getKeyState(GLFW_KEY_W)) {
-            camera.forward(movemul * dt);
-        }
-        if (window.getKeyState(GLFW_KEY_A)) {
-            camera.left(movemul * dt);
-        }
-        if (window.getKeyState(GLFW_KEY_S)) {
-            camera.backward(movemul * dt);
-        }
-        if (window.getKeyState(GLFW_KEY_D)) {
-            camera.right(movemul * dt);
-        }
         if (window.getKeyState(GLFW_KEY_C)) {
             camera.down(movemul * dt);
         }
         if (window.getKeyState(GLFW_KEY_SPACE)) {
             camera.up(movemul * dt);
         }
+<<<<<<< HEAD
 
         //TODO Ist das mit orbREnd (vorher Orb light richtig?
 
         if (window.getKeyState(GLFW_KEY_UP)) {
             orbRend.translateGlobal(new Vector3f(0.0f, 0.0f, -1.0f * dt));
+=======
+//        if (window.getKeyState(GLFW_KEY_W)) {
+//            camera.forward(movemul * dt);
+//        }
+//        if (window.getKeyState(GLFW_KEY_A)) {
+//            camera.left(movemul * dt);
+//        }
+//        if (window.getKeyState(GLFW_KEY_S)) {
+//            camera.backward(movemul * dt);
+//        }
+//        if (window.getKeyState(GLFW_KEY_D)) {
+//            camera.right(movemul * dt);
+//        }
+
+        if (window.getKeyState(GLFW_KEY_UP)) {
+            orbRend.translateGlobal(new Vector3f(0.0f, 1.0f * dt, 0.0f));
+>>>>>>> 618c7afcc93826061ff1a279d57428cabe165aa0
         }
         if (window.getKeyState(GLFW_KEY_DOWN)) {
-            orb_light.translateGlobal(new Vector3f(0.0f, 0.0f, 1.0f * dt));
+            orbRend.translateGlobal(new Vector3f(0.0f, -1.0f * dt, 0.0f));
         }
+
+
+        //TODO Ist das mit Orb light richtig?
+
+//        if (window.getKeyState(GLFW_KEY_UP)) {
+//            orb_light.translateGlobal(new Vector3f(0.0f, 0.0f, -1.0f * dt));
+//        }
+//        if (window.getKeyState(GLFW_KEY_DOWN)) {
+//            orb_light.translateGlobal(new Vector3f(0.0f, 0.0f, 1.0f * dt));
+//        }
         if (window.getKeyState(GLFW_KEY_LEFT)) {
             orb_light.translateGlobal(new Vector3f(-1.0f * dt, 0.0f, 0.0f));
         }
