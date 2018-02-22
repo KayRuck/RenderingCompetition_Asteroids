@@ -102,8 +102,8 @@ public class Scene {
 
             //light setup
 
-            orb_light  = new PointLight(new Vector3f(1.0f, 1.0f, 160.0f / 255.0f), new Vector3f(0.3f, 1.7f, 1.6f));
-            ring_light = new PointLight(new Vector3f(1.0f, 1.0f, 160.0f / 255.0f), new Vector3f(0.3f, 1.7f, 1.6f)); // TODO: Anpassen
+            orb_light  = new PointLight(new Vector3f(1.0f, 1.0f, 160.0f / 255.0f), new Vector3f(0.3f, 1.7f, 1.6f)); // TODO Kugel- und Ringfarbe ändern, mit Paint die Textur ändern -> neue Farbe (orb_emitt.png)
+            ring_light = new PointLight(new Vector3f(1.0f, 200.0f, 1.0f ), new Vector3f(0.3f, 1.7f, 1.6f)); // TODO: Anpassen
 
 
             //setup camera
@@ -164,15 +164,16 @@ public class Scene {
         orbRend.render(shader);  // zweites Objekt (ring) wird nihct angezeigt
 
         orb_light.bind(shader, "light");
+        ring_light.bind(shader, "light");
         shader.setUniform("uvMultiplier", 1.0f);
 >>>>>>> 618c7afcc93826061ff1a279d57428cabe165aa0
 
         // TODO richtig machen
-//        ringRend.render(shader);
+        ringRend.render(shader);
 
         Transformable[] t = {orbRend}; // TODO Orb oder Orb_light? Muss ein Rendable sein
         ringRend.render(shader, t);
-//        ringRend.translateGlobal( new Vector3f(-ringRend.getPosition().x, -ringRend.getPosition().y, -ringRend.getPosition().z ));
+        ringRend.translateGlobal( new Vector3f(-ringRend.getPosition().x, -ringRend.getPosition().y, -ringRend.getPosition().z ));
 
     }
 
