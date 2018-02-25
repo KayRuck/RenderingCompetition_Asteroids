@@ -46,6 +46,10 @@ public class Scene {
     //flashlight
     private float flashlight;
 
+    //hitdecetion
+    private boolean gameOver = false;
+    public static boolean CONSOLE_LOG = true;
+
     public Scene(GameWindow window) {
         this.window = window;
     }
@@ -232,6 +236,14 @@ public class Scene {
             camera.up(movemul * dt);
         }
 
+        // Admin cheat
+        if (window.getKeyState(GLFW_KEY_F5)) {
+            gameOver = false;
+        }
+
+        //Game Over !
+        if (gameOver) return;
+
         //orb update // TODO Bewegung auf sinnvollen radius einschränken
         if (window.getKeyState(GLFW_KEY_UP)) {
             orbRend.translateGlobal(new Vector3f(0.0f, 1.0f * dt, 0.0f));
@@ -251,12 +263,12 @@ public class Scene {
         }
 
 
-        //comet update/movement //TODO
-        boolean hit = false;
+        //comet update/movement
         for (Renderable r : cometRend) {
             if (r.getPosition().z < 3.0f) {
                 r.translateGlobal(new Vector3f(0.0f, 0.0f, 1.0f * dt)); // TODO Geschwindigkeit anpassen (über Zeit schneller werden)
-                hit = hitDetection(r.getPosition());
+                gameOver = ufoHitDetection(r.getPosition());
+                if (gameOver) return;
             }
             else {
                 //reset comet position
@@ -273,7 +285,7 @@ public class Scene {
                 r.translateGlobal(new Vector3f(x, y, z));
             }
         }
-        if (!hit) {
+        if (CONSOLE_LOG && !gameOver) {
             System.out.println("-------");
         }
     }
@@ -287,24 +299,110 @@ public class Scene {
 
     public void cleanup() {}
 
-    private boolean hitDetection(Vector3f comet){
+    private boolean ufoHitDetection(Vector3f comet){
+        boolean hit;
+        Vector3f ufo = orbRend.getPosition(); // center point of the orb and ring
+        float ufoOrbRadius  = 0.2f;
+        float comRadius     = 0.5f;
+        float ufoRingWidth  = 2.3f;
+        float ufoRingHeight = 0.25f;
+        float ufoRingDepth  = 0.4f;
+        Vector3f ufoRingP1 = new Vector3f(
+                ufo.x - ufoRingWidth / 2,  //left
+                ufo.y - ufoRingHeight / 2, //bottom
+                ufo.z - ufoRingDepth / 2); //front
+        Vector3f ufoRingP2 = new Vector3f(
+                ufo.x + ufoRingWidth / 2,  //right
+                ufo.y + ufoRingHeight / 2, //up
+                ufo.z + ufoRingDepth / 2); //back
 
-        Vector3f ufo = orbRend.getPosition();
-        float ufoRadius = 0.8f;
-        float comRadius = 0.5f;
+        // hit detection orb
+        hit = collisionSphere(ufo, ufoOrbRadius, comet, comRadius);
+        if (hit) return true;
 
-        float dx = ufo.x - comet.x;
-        float dy = ufo.y - comet.y;
-        float dz = ufo.z - comet.z;
+        // hit detection ring
+        hit = collisionRectSpehere(comet, comRadius, ufoRingP1, ufoRingP2);
+        if (hit) return true;
+
+        return false;
+    }
+
+    /**
+     * Calc collision between a rectangle and a sphere
+     * @param sphere center point of the sphere
+     * @param radius radius of the sphere
+     * @param p1 left-bottom-front point of the rectangle
+     * @param p2 right-top-back point of the rectangle
+     * @return true if both objects collide
+     */
+    private boolean collisionRectSpehere(Vector3f sphere, float radius, Vector3f p1, Vector3f p2) {
+
+        //case 1 - sphere center in rectangle
+        if (sphere.x > p1.x && sphere.x < p2.x
+                && sphere.y > p1.y && sphere.y < p2.y
+                && sphere.z > p1.z && sphere.z < p2.z) {
+            System.out.println("Ring Hit: Center");
+            return true;
+        }
+
+        //case 2 - one corner of the rectangle is in the sphere
+        // ggf. weglassen, da wir miteinem Ring arbeiten und dieser Fall daher
+        // zwar für ein Rechteck richtig wäre aber hier zu unschönen Kollisionen führen würde
+
+
+        //case 3 - the sphere interleaves one edge of the rectangle
+
+        //x-Edges
+        boolean yzArea   = sphere.y > p1.y && sphere.y < p2.y && sphere.z > p1.z && sphere.z < p2.z;
+        boolean leftHit  = Math.abs(sphere.x - p1.x) < radius;
+        boolean rightHit = Math.abs(sphere.x - p2.x) < radius;
+        if (yzArea && (leftHit || rightHit)) {
+            if (CONSOLE_LOG) System.out.println("Rint Hit: X-Edge");
+            return true;
+        }
+
+        //y-Edges
+        boolean xzArea = sphere.x > p1.x && sphere.x < p2.x && sphere.z > p1.z && sphere.z < p2.z;
+        boolean topHit = Math.abs(sphere.y - p1.y) < radius;
+        boolean botHit = Math.abs(sphere.y - p2.y) < radius;
+        if (xzArea && (topHit ||botHit)) {
+           if (CONSOLE_LOG) System.out.println("Ring Hit: Y-Edge");
+           return true;
+        }
+
+        //z-Edges
+        boolean xyArea   = sphere.x > p1.x && sphere.x < p2.x && sphere.y > p1.y && sphere.y < p2.y;
+        boolean frontHit = Math.abs(sphere.z - p1.z) < radius;
+        boolean backHit  = Math.abs(sphere.z - p2.z) < radius;
+        if (xyArea && (frontHit || backHit)) {
+            if (CONSOLE_LOG) System.out.println("Ring Hit: Z-Edge");
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Calc collision between two spheres
+     * @param p1 center point of sphere 1
+     * @param rad1 radius of sphere 1
+     * @param p2 center point of sphere 2
+     * @param rad2 radius of sphere 2
+     * @return true if both spheres collide
+     */
+    private boolean collisionSphere(Vector3f p1, float rad1, Vector3f p2, float rad2) {
+    //calc deltas
+        float dx = p1.x - p2.x;
+        float dy = p1.y - p2.y;
+        float dz = p1.z - p2.z;
 
         float distance = (float) Math.sqrt(dx*dx + dy*dy + dz*dz);
 
-        if (distance <= (ufoRadius + comRadius)) {
-            // hit --> game over
-            System.out.println("HIT");
-            // TODO Programm beenden
+        if (distance <= (rad1 + rad2)) {
+            if (CONSOLE_LOG) System.out.println("Sphere Hit");
             return true;
         }
+
         return false;
     }
 

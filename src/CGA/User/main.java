@@ -9,7 +9,8 @@ public class main
 {
     public static void main(String[] args)
     {
-        Game game = new Game(1280, 720, false, true, "Testgame", 3, 3);
+        // 3840, 2160 || 1920, 1080 || 1280, 720 // ggf. Fullscreen true/false setzen!
+        Game game = new Game(1920, 1080, false, true, "Team-A's Steroids", 3, 3);
         game.run();
     }
 }
