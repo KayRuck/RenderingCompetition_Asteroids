@@ -2,6 +2,7 @@ package CGA.User.Game;
 
 /**
  * Created by Fabian on 16.09.2017.
+ * Edited by Team A (Kay Ruck, Philipp Schmeier, Merle Struckmann)
  */
 import CGA.Framework.*;
 import org.joml.Vector3f;
@@ -53,9 +54,5 @@ public class Game extends GameWindow
     }
 
     @Override
-    protected void onKey(int key, int scancode, int action, int mode) {
-       scene.onKey(key, scancode, action, mode);
-    }
-
-
+    protected void onKey(int key, int scancode, int action, int mode) {}
 }
