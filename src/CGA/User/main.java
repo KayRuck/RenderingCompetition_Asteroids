@@ -1,6 +1,7 @@
 package CGA.User;
 /**
  * Created by Fabian on 16.09.2017.
+ * Edited by Team A (Kay Ruck, Philipp Schmeier, Merle Struckmann)
  */
 import CGA.User.Game.*;
 
