@@ -11,7 +11,7 @@ uniform mat4 proj_matrix;
 
 //light
 uniform vec3 lightPosition;
-uniform float flashlightFactor;
+uniform float alienFactor;
 
 out struct VertexData
 {
@@ -47,7 +47,7 @@ void main() {
      // position der lichtquelle verändert sich, wir müssen jetzt die position der camera nutzen
     vec4 lightPos_camera1 = view_matrix * vec4(lightPosition, 1.0f); // sind schon in weltKoords, nur noch mit view verrechnen
     vec4 lightPos_camera2 = -vertexPos_camera;
-    vec4 lightPos_camera  = mix(lightPos_camera1, lightPos_camera2, flashlightFactor);
+    vec4 lightPos_camera  = mix(lightPos_camera1, lightPos_camera2, alienFactor);
 
 
 

@@ -10,6 +10,7 @@ import java.util.Collection;
 
 /**
  * Created by Fabian on 16.09.2017.
+ * Edited by Team A (Kay Ruck, Philipp Schmeier, Merle Struckmann)
  */
 public class Transformable {
     public Matrix4f transformMat = new Matrix4f();
@@ -60,6 +61,13 @@ public class Transformable {
 
     public void translateGlobal(Vector3f deltaPos) {
         transformMat = (new Matrix4f().translate(deltaPos)).mul(transformMat);
+    }
+
+    public void moveToGlobal(Vector3f pos) {
+        Vector3f oldPos = getPosition();
+        translateGlobal(new Vector3f(-oldPos.x, -oldPos.y, -oldPos.z));
+
+        translateGlobal(pos);
     }
 
     public void scaleLocal(Vector3f scale) {

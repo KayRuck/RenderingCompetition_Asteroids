@@ -11,7 +11,7 @@ public class main
     public static void main(String[] args)
     {
         // 3840, 2160 || 1920, 1080 || 1280, 720 // ggf. Fullscreen true/false setzen!
-        Game game = new Game(1920, 1080, false, true, "Team-A's Steroids", 3, 3);
+        Game game = new Game(3840, 2160, true, true, "Team-A's Steroids", 3, 3);
         game.run();
     }
 }

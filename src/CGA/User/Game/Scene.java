@@ -28,7 +28,7 @@ public class Scene {
     private GameWindow window;
 
     //Renderables
-    private Renderable ufoRend, ringRend, bgRend;
+    private Renderable ufoRend, ringRend, bgRend, winRend, loseRend, lifeRend, timeRend;
     private ArrayList<Renderable> cometRend = new ArrayList<>();
     public static final int COMETCOUNT = 15;
 
@@ -38,10 +38,7 @@ public class Scene {
 
     //Textures
     private Texture2D ufo_diff, ufo_spec, ufo_emit;
-    private Texture2D ring_diff;
-    private Texture2D comet_diff;
-    private Texture2D backgound_diff;
-    private Texture2D alienTex;
+    private Texture2D ringTex, cometTex, backgoundTex, alienTex, winTex, loseTex, lifeTex, timeTex;
 
     //camera
     private FlyCamera camera;
@@ -49,12 +46,18 @@ public class Scene {
     //alieneffekt
     private float alien;
 
-    //hitdecetion
-    private boolean gameOver = false;
+    //game logic
+    private boolean gameOver    = false;
+    private boolean gameOverMsg = false;
+    private boolean win         = false;
+    private boolean winMsg      = false;
+    private int lifeCount = 3;
+    private float invulnTime = 0;
     public static boolean CONSOLE_LOG = false;
 
     //time
     private float time = 0.0f;
+    private final float MAXTIME = 60;
 
     public Scene(GameWindow window) {
         this.window = window;
@@ -76,29 +79,53 @@ public class Scene {
             ufo_emit.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 
             //Load Ring textures
-            ring_diff = new Texture2D("assets/models/ringDingDing.jpg", true);
-            ring_diff.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+            ringTex = new Texture2D("assets/models/ringDingDing.jpg", true);
+            ringTex.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 
             //Load Comet textures
-            comet_diff = new Texture2D("assets/textures/comet.jpg", true);
-            comet_diff.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+            cometTex = new Texture2D("assets/textures/comet.jpg", true);
+            cometTex.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 
             //Load background textures
-            backgound_diff = new Texture2D("assets/textures/star.jpg", true);
-            backgound_diff.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+            backgoundTex = new Texture2D("assets/textures/star.jpg", true);
+            backgoundTex.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 
-            //Flashlight texture
-            alienTex = new Texture2D("assets/textures/flashlight_alien.png", true);
+            //Alien texture
+            alienTex = new Texture2D("assets/textures/alien.png", true);
             alienTex.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
             alien = 0.5f;
 
-            //load an object and create a mesh
-            OBJLoader.OBJResult resOrb    = OBJLoader.loadOBJ("assets/models/sphere.obj", true, true);
-            OBJLoader.OBJResult resRing   = OBJLoader.loadOBJ("assets/models/ringDingDing.obj", true, true);
-            OBJLoader.OBJResult resCom    = OBJLoader.loadOBJ("assets/models/texComet.obj", true, true);
-            OBJLoader.OBJResult resBG     = OBJLoader.loadOBJ("assets/models/background.obj", true, true);
+            //Win Texture
+            winTex = new Texture2D("assets/textures/winScreen.png", true);
+            winTex.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 
-            //Create the mesh
+            //Lose Texture
+            loseTex = new Texture2D("assets/textures/loseScreen.png", true);
+            loseTex.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+
+            //Life Texture
+            lifeTex = new Texture2D("assets/textures/lifes.png", true);
+            lifeTex.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+
+            //Time Texture
+            timeTex = new Texture2D("assets/textures/time.png", true);
+            timeTex.setTexParams(GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+
+            //load an object via OBJLoader
+            OBJLoader.OBJResult resOrb, resRing, resCom, resBG, resWin, resLose, resLife, resTime;
+
+            resOrb  = OBJLoader.loadOBJ("assets/models/sphere.obj", true, true);
+            resRing = OBJLoader.loadOBJ("assets/models/ringDingDing.obj", true, true);
+            resCom  = OBJLoader.loadOBJ("assets/models/texComet.obj", true, true);
+            resBG   = OBJLoader.loadOBJ("assets/models/background.obj", true, true);
+            resWin  = OBJLoader.loadOBJ("assets/models/background.obj", true, true);
+            resLose = OBJLoader.loadOBJ("assets/models/background.obj", true, true);
+            resLife = OBJLoader.loadOBJ("assets/models/background.obj", true, true);
+            resTime = OBJLoader.loadOBJ("assets/models/background.obj", true, true);
+
+            //Create the meshes
+
+            //define vertex attributes
             VertexAttribute[] vertexAttributes = new VertexAttribute[3];
             int stride = 8 * 4;
             vertexAttributes[0] = new VertexAttribute(3, GL_FLOAT, stride, 0);      //position attribute
@@ -119,7 +146,7 @@ public class Scene {
             ringRend = new Renderable();
 
             for (OBJLoader.OBJMesh m : resRing.objects.get(0).meshes) {
-                Mesh mesh = new Mesh(m.getVertexData(), m.getIndexData(), vertexAttributes, ring_diff, ring_diff, ring_diff, 5.0f);
+                Mesh mesh = new Mesh(m.getVertexData(), m.getIndexData(), vertexAttributes, ringTex, ringTex, ringTex, 5.0f);
                 ringRend.meshes.add(mesh);
             }
 
@@ -131,7 +158,7 @@ public class Scene {
             }
 
             for (OBJLoader.OBJMesh m : resCom.objects.get(0).meshes) {
-                Mesh mesh = new Mesh(m.getVertexData(), m.getIndexData(), vertexAttributes, comet_diff, comet_diff, comet_diff, 5.0f);
+                Mesh mesh = new Mesh(m.getVertexData(), m.getIndexData(), vertexAttributes, cometTex, cometTex, cometTex, 5.0f);
                 for (Renderable r : cometRend) {
                     r.meshes.add(mesh);
                 }
@@ -161,7 +188,7 @@ public class Scene {
             cometRend.get(13).translateGlobal(new Vector3f( -1.4f, -3.2f, -5.0f));
             cometRend.get(14).translateGlobal(new Vector3f( -1.4f, -3.2f, -15.0f));
 
-            //create renderables (backgound)
+            //create renderables (background)
             bgRend = new Renderable();
 
             for (OBJLoader.OBJMesh m : resBG.objects.get(0).meshes) {
@@ -169,9 +196,9 @@ public class Scene {
                         m.getVertexData(),
                         m.getIndexData(),
                         vertexAttributes,
-                        backgound_diff,
-                        backgound_diff,
-                        backgound_diff,
+                        backgoundTex,
+                        backgoundTex,
+                        backgoundTex,
                         1.0f
                 );
                 bgRend.meshes.add(mesh);
@@ -182,11 +209,62 @@ public class Scene {
             bgRend.rotateLocal(new Vector3f((float) Math.PI * 3/2, 0f, 0f));
             bgRend.scaleLocal(new Vector3f(200f, 0f, 100f));
 
+            //create renderables (winScreen)
+            winRend = new Renderable();
+            for (OBJLoader.OBJMesh m : resWin.objects.get(0).meshes) {
+                Mesh mesh = new Mesh(m.getVertexData(), m.getIndexData(), vertexAttributes, winTex, winTex, winTex, 5.0f);
+                winRend.meshes.add(mesh);
+            }
+
+            //init win screens position
+            winRend.translateGlobal(new Vector3f(20.0f, 0f, -95f));
+            winRend.rotateLocal(new Vector3f((float) Math.PI * 3/2, (float) Math.PI, 0f));
+            winRend.scaleLocal(new Vector3f(200f, 0f, 100f));
+
+            //create renderables (loseScreen)
+            loseRend = new Renderable();
+            for (OBJLoader.OBJMesh m : resLose.objects.get(0).meshes) {
+                Mesh mesh = new Mesh(m.getVertexData(), m.getIndexData(), vertexAttributes, loseTex, loseTex, loseTex, 5.0f);
+                loseRend.meshes.add(mesh);
+            }
+
+            //init lose screen position
+            loseRend.translateGlobal(new Vector3f(7.0f, 0f, -95f));
+            loseRend.rotateLocal(new Vector3f((float) Math.PI * 3/2, (float) Math.PI, 0f));
+            loseRend.scaleLocal(new Vector3f(200f, 0f, 100f));
+
+
+            //create renderables (lifes)
+            lifeRend = new Renderable();
+            for (OBJLoader.OBJMesh m : resLife.objects.get(0).meshes) {
+                Mesh mesh = new Mesh(m.getVertexData(), m.getIndexData(), vertexAttributes, lifeTex, lifeTex, lifeTex, 5.0f);
+                lifeRend.meshes.add(mesh);
+            }
+
+            //init life position
+            lifeRend.translateGlobal(new Vector3f(130.0f, 75.0f, -87f));
+            lifeRend.rotateLocal(new Vector3f((float) Math.PI * 3/2, (float) Math.PI, 0f));
+            lifeRend.scaleLocal(new Vector3f(20f, 0f, 6f));
+
+            //create renderables (time)
+            timeRend = new Renderable();
+            for (OBJLoader.OBJMesh m : resTime.objects.get(0).meshes) {
+                Mesh mesh = new Mesh(m.getVertexData(), m.getIndexData(), vertexAttributes, timeTex, timeTex, timeTex, 5.0f);
+                timeRend.meshes.add(mesh);
+            }
+
+            //init time position
+            //start value x = 360
+            timeRend.translateGlobal(new Vector3f(360.0f, 85f, -87f));
+            timeRend.rotateLocal(new Vector3f((float) Math.PI * 3/2, 0, 0f));
+            timeRend.scaleLocal(new Vector3f(200f, 0f, 2.5f));
+
+
             //light setup
             ufo_light  = new PointLight(new Vector3f(1.0f, 1.0f, 160.0f / 255.0f), new Vector3f(0.3f, 1.7f, 1.6f));
             ring_light = new PointLight(new Vector3f(0.3f, 0.3f, 0.3f ), new Vector3f(0.3f, 1.7f, 1.6f));
 
-            //setup camera // TODO Change to Orbitcam
+            //setup camera
             camera = new FlyCamera(
                     window.getFramebufferWidth(),
                     window.getFramebufferHeight(),
@@ -224,8 +302,8 @@ public class Scene {
 
         shader.use();
         alienTex.bind(3);
-        shader.setUniform("flashlightTex", 3);
-        shader.setUniform("flashlightFactor", alien);
+        shader.setUniform("alienTex", 3);
+        shader.setUniform("alienFactor", alien);
         shader.setUniform("screensize", new Vector2f((float) window.getFramebufferWidth(), (float) window.getFramebufferHeight()));
 
         //render camera
@@ -240,11 +318,14 @@ public class Scene {
             r.render(shader);
         }
         bgRend.render(shader);
+        winRend.render(shader);
+        loseRend.render(shader);
+        lifeRend.render(shader);
+        timeRend.render(shader);
 
         ufo_light.bind(shader, "light");
         ring_light.bind(shader, "light");
         shader.setUniform("uvMultiplier", 1.0f);
-
     }
 
     public void update(float dt) {
@@ -273,32 +354,61 @@ public class Scene {
             gameOver = false;
         }
 
-        //Game Over !
-        if (gameOver) return;
+        if (win) {
+            if (!winMsg) {
+                winMsg = true;
 
-        //winner winner chicken dinner
-        time += dt;
-        if (time > 60) {
-            System.out.println("---------------------------------");
-            System.out.println("- Winner Winner Chicken Dinner! -");
-            System.out.println("---------------------------------");
-            System.out.println("            __//      ");
-            System.out.println("           /.__.\\    ");
-            System.out.println("           \\ \\/ /   ");
-            System.out.println("        '__/    \\    ");
-            System.out.println("         \\-      )   ");
-            System.out.println("          \\_____/    ");
-            System.out.println("       _____|_|____   ");
-            System.out.println("            \" \"     ");
-            System.out.println("---------------------------------");
+                //console msg
+                System.out.println("---------------------------------");
+                System.out.println("- Winner Winner Chicken Dinner! -");
+                System.out.println("---------------------------------");
+                System.out.println("            __//      ");
+                System.out.println("           /.__.\\    ");
+                System.out.println("           \\ \\/ /   ");
+                System.out.println("        '__/    \\    ");
+                System.out.println("         \\-      )   ");
+                System.out.println("          \\_____/    ");
+                System.out.println("       _____|_|____   ");
+                System.out.println("            \" \"     ");
+                System.out.println("---------------------------------");
 
-            gameOver = true;
+                //UI msg
+                winRend.translateGlobal(new Vector3f(0f, 0f, 10f));
+            }
+
             return;
         }
 
+        //Game Over
+        if (gameOver) {
+            if (!gameOverMsg) {
+                gameOverMsg = true;
+
+                //console msg
+                System.out.println("Leider verloren, versuchs doch noch einmal :)");
+
+                //UI msg
+                loseRend.translateGlobal(new Vector3f(0f, 0f, 10f));
+            }
+            return;
+        }
+
+        //time
+        time += dt;
+        invulnTime -= dt;
+        if (time > MAXTIME) {
+            win = true;
+            return;
+        }
+
+        //time UI
+        timeRend.translateGlobal(new Vector3f((-320.0f / MAXTIME) * dt, 0f, 0f));
+
         //alien-effekt
         int s =  (int) time;
-        if ( s % 10 == 0 && s != 0) alien = 1.0f;
+        //calc effect time --> after 30 sec's, for 3 sec
+        boolean effectTime = s % 30 == 0 || s % 31 == 0 || s % 32 == 0 || s % 33 == 0;
+        if (effectTime && s != 0) alien = 1.0f;
         else alien = 0.5f;
 
         //ufo update
@@ -322,9 +432,16 @@ public class Scene {
         //comet update/movement
         for (Renderable r : cometRend) {
             if (r.getPosition().z < 3.0f) {
-                r.translateGlobal(new Vector3f(0.0f, 0.0f, 1.0f * dt));
-                gameOver = ufoHitDetection(r.getPosition());
-                if (gameOver) return;
+                r.translateGlobal(new Vector3f(0.0f, 0.0f, 1.0f * dt * (time / 10)));
+                if (ufoHitDetection(r.getPosition())) gameOver = true;
+
+                if (invulnTime < 0 && gameOver && lifeCount > 1) {
+                    if (CONSOLE_LOG) System.out.println("Ein Leben weniger: " + lifeCount);
+                    lifeCount--;
+                    invulnTime = 3;
+                    gameOver = false;
+                    lifeRend.translateGlobal(new Vector3f(19f, 0f, 0f));
+                }
             }
             else {
                 //reset comet position
@@ -333,7 +450,7 @@ public class Scene {
                 //comet new position
                 float x =  (float) (java.lang.Math.random() * 3.4f);// randwerte: x: +/- 3.3f
                 float y =  (float) (java.lang.Math.random() * 1.9f);//            y: +/- 1.9f
-                float z = ((float) (java.lang.Math.random() * 7.0f) + 2.0f) * -1;
+                float z = ((float) (java.lang.Math.random() * 7.0f) + 6.0f) * -1;
 
                 if ((int) (java.lang.Math.random() * 2) >= 1) x *= -1;
                 if ((int) (java.lang.Math.random() * 2) >= 1) y *= -1;
@@ -341,8 +458,10 @@ public class Scene {
                 r.translateGlobal(new Vector3f(x, y, z));
             }
         }
-        if (CONSOLE_LOG && !gameOver) {
-            System.out.println("-------");
+
+        if (invulnTime > 0) {
+            gameOver = false;
+            alien = 0.1f;
         }
     }
 
@@ -390,7 +509,7 @@ public class Scene {
         if (sphere.x > p1.x && sphere.x < p2.x
                 && sphere.y > p1.y && sphere.y < p2.y
                 && sphere.z > p1.z && sphere.z < p2.z) {
-            System.out.println("Ring Hit: Center");
+            if (CONSOLE_LOG) System.out.println("Ring Hit: Center");
             return true;
         }
 

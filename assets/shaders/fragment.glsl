@@ -17,9 +17,9 @@ uniform vec3 lightColor;
 uniform sampler2D diff;
 uniform sampler2D spec;
 uniform sampler2D emit;
-uniform sampler2D flashlightTex;
+uniform sampler2D alienTex;
 
-uniform float flashlightFactor;
+uniform float alienFactor;
 uniform float shininess;
 uniform float uvMultiplier; // mvMultiplier > 1 --> man macht größere schritte in der Textur, die Textru wirkt kleiner
 
@@ -40,7 +40,7 @@ void main(){
     vec3 normalNorm            = normalize(vertexData.normal);
 
     // switch flashlight
-    vec4 flashlightColor = texture(flashlightTex, gl_FragCoord.xy / screensize);
+    vec4 flashlightColor = texture(alienTex, gl_FragCoord.xy / screensize);
 
     // L = M_a * L_a + (M_d * cos(alpha) + M_s * cos(beta)^k) * L
 
@@ -64,7 +64,7 @@ void main(){
     vec4 specularColor = texture(spec, vertexData.textureCoordinate * uvMultiplier);
 
     // emmisiv
-    vec4 emitColor = mix(texture(emit, vertexData.textureCoordinate * uvMultiplier), vec4(0.0f, 0.0f, 0.0f, 0.0f), flashlightFactor);
+    vec4 emitColor = mix(texture(emit, vertexData.textureCoordinate * uvMultiplier), vec4(0.0f, 0.0f, 0.0f, 0.0f), alienFactor);
 
     //color = defuseColor * ambientColor + (defuseColor * cosAlpha ) * vec4(lightColor, 1.0f);//+ specularColor * cosBeta) * vec4(lightColor, 1.0f);
 
@@ -73,7 +73,7 @@ void main(){
     float distance = length(vertexData.toLight);
     float light_attenuation = 1 / (light_attenuation_c + light_attenuation_l * distance + light_attenuation_q*distance*distance);
 
-    vec4 myLightColor = mix(vec4(lightColor, 1.0f), flashlightColor, flashlightFactor);
+    vec4 myLightColor = mix(vec4(lightColor, 1.0f), flashlightColor, alienFactor);
 
     color = emitColor + defuseColor * ambientColor + (defuseColor * cosAlpha + specularColor * cosBeta)*myLightColor*light_attenuation;
 
